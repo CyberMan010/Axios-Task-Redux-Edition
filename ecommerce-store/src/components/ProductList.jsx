@@ -1,39 +1,42 @@
-import { useEffect, useState } from "react";
-import axios from "./api/axios";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchProducts, deleteProduct, updateProduct } from "../store/features/productsSlice"; 
 import ProductCard from "./ProductCard";
-import { useNavigate } from "react-router-dom";
 
-function ProductList() {
-  const [data, setData] = useState([]);
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
+function ProductList({ isAdmin }) {
+  const dispatch = useDispatch();
+  const { products, status, error } = useSelector((state) => state.products);
 
   useEffect(() => {
-    getProducts();
-  }, []);
+    dispatch(fetchProducts());
+  }, [dispatch]);
 
-  async function getProducts() {
-    try {
-      const response = await axios.get("/products");
-      setData(response.data);
-    } catch (error) {
-      setError(error.message);
+  const handleDelete = (id) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this product?");
+    if (confirmDelete) {
+      dispatch(deleteProduct(id));
     }
-  }
-
-  const handleProductClick = (productId) => {
-    navigate(`/product/${productId}`);
   };
 
+  const handleEdit = (updatedProduct) => {
+    dispatch(updateProduct({ id: updatedProduct.id, updatedProduct }));
+  };
+
+  if (status === "loading") return <p>Loading...</p>;
+  if (status === "failed") return <p>Error: {error}</p>;
+
   return (
-    <>
-      {error && <p>{error}</p>}
-      {data.map((product) => (
-        <div key={product.id} onClick={() => handleProductClick(product.id)}>
-          <ProductCard product={product} />
-        </div>
+    <div>
+      {products.map((product) => (
+        <ProductCard 
+          key={product.id} 
+          product={product} 
+          onEdit={handleEdit} 
+          onDelete={handleDelete} 
+          isAdmin={isAdmin} 
+        />
       ))}
-    </>
+    </div>
   );
 }
 
