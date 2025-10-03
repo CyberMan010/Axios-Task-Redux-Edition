@@ -32,7 +32,7 @@ function SignUp() {
       });
       console.log("SignUp successful:", response.data);
 
-      // Redirect to login
+      // Redirect to login after successful sign-up
       navigate("/login");
     } catch (error) {
       console.error("SignUp failed:", error);
